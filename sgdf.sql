@@ -119,16 +119,19 @@ EXEC AddFirma 'FSDSDB', 'Tallinn', '5559988';
 
 
 
-GO
-CREATE PROCEDURE AddEmailColumn
+CREATE PROCEDURE AddFirmaEmail
+    @ID INT,            
+    @uusEmail VARCHAR(50) 
 AS
 BEGIN
-    ALTER TABLE firma ADD email VARCHAR(50);
+    UPDATE firma 
+    SET email = @uusEmail 
+    WHERE firmaID = @ID;
+    
+    SELECT * FROM firma WHERE firmaID = @ID;
 END;
-UPDATE firma SET email = 'info@superit.ee' WHERE firmaID = 1;
-EXEC AddEmailColumn;
+EXEC AddFirmaEmail @ID = 5, @uusEmail = 'alpha-x@office.ee';
 SELECT * FROM firma;
-SELECT * FROM praktikajuhendaja;
 
 GO
 CREATE PROCEDURE GetAvgSalary
