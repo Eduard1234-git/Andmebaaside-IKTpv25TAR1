@@ -95,3 +95,41 @@ SELECT * FROM logi;
 
 --lisame kasutajaNimi logi tabelisse
 ALTER TABLE logi add kasutaja varchar(50)
+
+CREATE TRIGGER linnaLisamineKustutamine
+ON linnad
+FOR INSERT, DELETE
+AS
+BEGIN
+SET NOCOUNT ON;
+
+INSERT INTO logi(kuupaev, andmed, kasutaja)
+SELECT 
+    getdate(),
+    CONCAT('lisatud linn: ', inserted.linnanimi, 
+           ' | rahvaarv: ', inserted.rahvaarv, 
+           ' | id: ', inserted.linnId),
+    SYSTEM_USER
+FROM inserted
+
+UNION ALL
+
+SELECT 
+ getdate(),
+    CONCAT('lisatud linn: ', deleted.linnanimi, 
+           ' | rahvaarv: ', deleted.rahvaarv, 
+           ' | id: ', deleted.linnId),
+    SYSTEM_USER
+	FROM deleted 
+END;
+--deaktiveerimine linnalisamine ja linnaKasutamine
+DISABLE TRIGGER linnaLisamine ON linnad;
+DISABLE TRIGGER linnaKustutamine on linnad;
+
+--kontroll
+INSERT INTO linnad (linnanimi, rahvaarv)
+VALUES ('Kelle34', 6000);
+SELECT * FROM linnad;
+SELECT * FROM logi;
+
+DELETE FROM linnad WHERE linnID=5
