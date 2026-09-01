@@ -25,3 +25,11 @@ GRANT SELECT TO opilaneEduard; --saab vaadata kõik tabeleid
 GRANT INSERT ON opilane TO opilaneEduard; --saab ainult tabelisse opilane
 
 DENY DELETE TO opilaneEduard;
+
+--esimine fail
+SELECT * FROM opilane, ryhm 
+WHERE opilane.ryhmId=ryhm.ryhmId;
+
+DELETE FROM opilane;
+
+INSERT INTO opilane VALUES ('Nikita', '12425435', 1);
