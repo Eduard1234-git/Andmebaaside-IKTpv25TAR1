@@ -1,0 +1,257 @@
+-- Created by Redgate Data Modeler (https://datamodeler.redgate-platform.com)
+-- Last modification date: 2026-10-01 10:21:15.454
+
+-- tables
+-- Table: Amet
+CREATE TABLE Amet (
+    amet_id bigint  NOT NULL IDENTITY,
+    nimetus varchar(100)  NOT NULL,
+    kirjeldus text  NULL,
+    ametijuhend text  NULL,
+    CONSTRAINT AK_1 UNIQUE (nimetus),
+    CONSTRAINT Amet_pk PRIMARY KEY  (amet_id)
+);
+
+-- Table: Ameti_maaramine
+CREATE TABLE Ameti_maaramine (
+    maaramine_id bigint  NOT NULL IDENTITY,
+    tootaja_id bigint  NOT NULL,
+    amet_id bigint  NOT NULL,
+    algus_kuupaev date  NOT NULL,
+    lopp_kuupaev date  NULL,
+    CONSTRAINT CHECK_0 CHECK (( lopp_kuupaev IS NULL OR lopp_kuupaev >= algus_kuupaev )),
+    CONSTRAINT Ameti_maaramine_pk PRIMARY KEY  (maaramine_id)
+);
+
+CREATE INDEX idx_amet_tootaja on Ameti_maaramine (tootaja_id ASC)
+;
+
+CREATE INDEX idx_amet_amet on Ameti_maaramine (amet_id ASC)
+;
+
+-- Table: Arve
+CREATE TABLE Arve (
+    arve_id bigint  NOT NULL IDENTITY,
+    remont_id bigint  NOT NULL,
+    kuupaev date  NOT NULL,
+    toode_maksumus numeric(12,2)  NOT NULL DEFAULT 0,
+    lopp_summa numeric(12,2)  NOT NULL DEFAULT 0,
+    makse_staatus varchar(24)  NOT NULL DEFAULT tasumata,
+    CONSTRAINT AK_3 UNIQUE (remont_id),
+    CONSTRAINT Arve_pk PRIMARY KEY  (arve_id)
+);
+
+-- Table: Arve_rida
+CREATE TABLE Arve_rida (
+    arve_rida_id bigint  NOT NULL IDENTITY,
+    arve_id bigint  NOT NULL,
+    varuosa_id bigint  NULL,
+    rea_tyyp varchar(16)  NOT NULL,
+    kirjeldus varchar(250)  NOT NULL,
+    kogus numeric(10,2)  NOT NULL DEFAULT 1,
+    uhikuhind numeric(12,2)  NOT NULL,
+    summa numeric(12,2)  NOT NULL,
+    CONSTRAINT CHECK_5 CHECK (( rea_tyyp IN ( 'too' , 'varuosa' ) )),
+    CONSTRAINT CHECK_6 CHECK (( ( rea_tyyp = 'too' AND varuosa_id IS NULL ) OR ( rea_tyyp = 'varuosa' AND varuosa_id IS NOT NULL ) )),
+    CONSTRAINT CHECK_7 CHECK (( kogus > 0 )),
+    CONSTRAINT CHECK_8 CHECK (( uhikuhind >= 0 )),
+    CONSTRAINT CHECK_9 CHECK (( summa >= 0 )),
+    CONSTRAINT Arve_rida_pk PRIMARY KEY  (arve_rida_id)
+);
+
+CREATE INDEX idx_arve_rida_arve on Arve_rida (arve_id ASC)
+;
+
+CREATE INDEX idx_arve_rida_varuosa on Arve_rida (varuosa_id ASC)
+;
+
+-- Table: Auto
+CREATE TABLE Auto (
+    reg_number varchar(16)  NOT NULL,
+    klient_id bigint  NOT NULL,
+    mark varchar(80)  NOT NULL,
+    mudel varchar(100)  NOT NULL,
+    valmistamisaasta smallint  NULL,
+    labisoit integer  NULL,
+    CONSTRAINT Auto_pk PRIMARY KEY  (reg_number)
+);
+
+CREATE INDEX idx_auto_klient on Auto (klient_id ASC)
+;
+
+-- Table: Kategooria
+CREATE TABLE Kategooria (
+    kategooria_id bigint  NOT NULL IDENTITY,
+    nimetus varchar(120)  NOT NULL,
+    kirjeldus text  NULL,
+    kestvus_min integer  NULL,
+    CONSTRAINT AK_2 UNIQUE (nimetus),
+    CONSTRAINT Kategooria_pk PRIMARY KEY  (kategooria_id)
+);
+
+-- Table: Klient
+CREATE TABLE Klient (
+    klient_id bigint  NOT NULL IDENTITY,
+    nimi varchar(160)  NOT NULL,
+    tel varchar(30)  NULL,
+    e_post varchar(254)  NULL,
+    CONSTRAINT Klient_pk PRIMARY KEY  (klient_id)
+);
+
+-- Table: Remond_tootaja
+CREATE TABLE Remond_tootaja (
+    remont_id bigint  NOT NULL,
+    tootaja_id bigint  NOT NULL,
+    roll varchar(100)  NULL,
+    CONSTRAINT Remond_tootaja_pk PRIMARY KEY  (remont_id,tootaja_id)
+);
+
+CREATE INDEX idx_remond_tootaja_tootaja on Remond_tootaja (tootaja_id ASC)
+;
+
+-- Table: Remonditoo
+CREATE TABLE Remonditoo (
+    remont_id bigint  NOT NULL IDENTITY,
+    reg_number varchar(16)  NOT NULL,
+    kategooria_id bigint  NOT NULL,
+    kuupaev date  NOT NULL,
+    kirjeldus text  NOT NULL,
+    staatus varchar(24)  NOT NULL DEFAULT planeeritud,
+    CONSTRAINT Remonditoo_pk PRIMARY KEY  (remont_id)
+);
+
+CREATE INDEX idx_remont_auto on Remonditoo (reg_number ASC)
+;
+
+CREATE INDEX idx_remont_kategooria on Remonditoo (kategooria_id ASC)
+;
+
+-- Table: Remont_varuosa
+CREATE TABLE Remont_varuosa (
+    remont_id bigint  NOT NULL,
+    varuosa_id bigint  NOT NULL,
+    kogus integer  NOT NULL,
+    CONSTRAINT CHECK_3 CHECK (( kogus > 0 )),
+    CONSTRAINT Remont_varuosa_pk PRIMARY KEY  (remont_id,varuosa_id)
+);
+
+CREATE INDEX idx_remont_varuosa_varuosa on Remont_varuosa (varuosa_id ASC)
+;
+
+-- Table: Tarnija
+CREATE TABLE Tarnija (
+    tarnija_id bigint  NOT NULL IDENTITY,
+    nimi varchar(160)  NOT NULL,
+    kontakt varchar(250)  NULL,
+    CONSTRAINT Tarnija_pk PRIMARY KEY  (tarnija_id)
+);
+
+-- Table: Tarnija_varuosa
+CREATE TABLE Tarnija_varuosa (
+    tarnija_id bigint  NOT NULL,
+    varuosa_id bigint  NOT NULL,
+    hind numeric(12,2)  NOT NULL,
+    CONSTRAINT CHECK_4 CHECK (( hind >= 0 )),
+    CONSTRAINT Tarnija_varuosa_pk PRIMARY KEY  (tarnija_id,varuosa_id)
+);
+
+CREATE INDEX idx_tarnija_varuosa_varuosa on Tarnija_varuosa (varuosa_id ASC)
+;
+
+-- Table: Tootaja
+CREATE TABLE Tootaja (
+    tootaja_id bigint  NOT NULL IDENTITY,
+    nimi varchar(100)  NOT NULL,
+    perekonnanimi varchar(100)  NOT NULL,
+    isikukood varchar(32)  NULL,
+    tel varchar(30)  NULL,
+    aadress varchar(250)  NULL,
+    CONSTRAINT AK_0 UNIQUE (isikukood),
+    CONSTRAINT Tootaja_pk PRIMARY KEY  (tootaja_id)
+);
+
+-- Table: Varuosa
+CREATE TABLE Varuosa (
+    varuosa_id bigint  NOT NULL IDENTITY,
+    nimetus varchar(160)  NOT NULL,
+    tootja varchar(120)  NULL,
+    hind numeric(12,2)  NOT NULL,
+    laoseis integer  NOT NULL DEFAULT 0,
+    CONSTRAINT CHECK_1 CHECK (( hind >= 0 )),
+    CONSTRAINT CHECK_2 CHECK (( laoseis >= 0 )),
+    CONSTRAINT Varuosa_pk PRIMARY KEY  (varuosa_id)
+);
+
+-- foreign keys
+-- Reference: FK_0 (table: Auto)
+ALTER TABLE Auto ADD CONSTRAINT FK_0
+    FOREIGN KEY (klient_id)
+    REFERENCES Klient (klient_id);
+
+-- Reference: FK_1 (table: Ameti_maaramine)
+ALTER TABLE Ameti_maaramine ADD CONSTRAINT FK_1
+    FOREIGN KEY (tootaja_id)
+    REFERENCES Tootaja (tootaja_id);
+
+-- Reference: FK_10 (table: Tarnija_varuosa)
+ALTER TABLE Tarnija_varuosa ADD CONSTRAINT FK_10
+    FOREIGN KEY (varuosa_id)
+    REFERENCES Varuosa (varuosa_id);
+
+-- Reference: FK_11 (table: Arve)
+ALTER TABLE Arve ADD CONSTRAINT FK_11
+    FOREIGN KEY (remont_id)
+    REFERENCES Remonditoo (remont_id);
+
+-- Reference: FK_12 (table: Arve_rida)
+ALTER TABLE Arve_rida ADD CONSTRAINT FK_12
+    FOREIGN KEY (arve_id)
+    REFERENCES Arve (arve_id);
+
+-- Reference: FK_13 (table: Arve_rida)
+ALTER TABLE Arve_rida ADD CONSTRAINT FK_13
+    FOREIGN KEY (varuosa_id)
+    REFERENCES Varuosa (varuosa_id);
+
+-- Reference: FK_2 (table: Ameti_maaramine)
+ALTER TABLE Ameti_maaramine ADD CONSTRAINT FK_2
+    FOREIGN KEY (amet_id)
+    REFERENCES Amet (amet_id);
+
+-- Reference: FK_3 (table: Remonditoo)
+ALTER TABLE Remonditoo ADD CONSTRAINT FK_3
+    FOREIGN KEY (reg_number)
+    REFERENCES Auto (reg_number);
+
+-- Reference: FK_4 (table: Remonditoo)
+ALTER TABLE Remonditoo ADD CONSTRAINT FK_4
+    FOREIGN KEY (kategooria_id)
+    REFERENCES Kategooria (kategooria_id);
+
+-- Reference: FK_5 (table: Remond_tootaja)
+ALTER TABLE Remond_tootaja ADD CONSTRAINT FK_5
+    FOREIGN KEY (remont_id)
+    REFERENCES Remonditoo (remont_id);
+
+-- Reference: FK_6 (table: Remond_tootaja)
+ALTER TABLE Remond_tootaja ADD CONSTRAINT FK_6
+    FOREIGN KEY (tootaja_id)
+    REFERENCES Tootaja (tootaja_id);
+
+-- Reference: FK_7 (table: Remont_varuosa)
+ALTER TABLE Remont_varuosa ADD CONSTRAINT FK_7
+    FOREIGN KEY (remont_id)
+    REFERENCES Remonditoo (remont_id);
+
+-- Reference: FK_8 (table: Remont_varuosa)
+ALTER TABLE Remont_varuosa ADD CONSTRAINT FK_8
+    FOREIGN KEY (varuosa_id)
+    REFERENCES Varuosa (varuosa_id);
+
+-- Reference: FK_9 (table: Tarnija_varuosa)
+ALTER TABLE Tarnija_varuosa ADD CONSTRAINT FK_9
+    FOREIGN KEY (tarnija_id)
+    REFERENCES Tarnija (tarnija_id);
+
+-- End of file.
+
