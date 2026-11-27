@@ -198,6 +198,9 @@ Insert into Tellimus values (1, 1, 'Mari', 1)
 Insert into Tellimus values (2, 2, 'Jaan', 1)
 Insert into Tellimus values (3, 3, 'Kati', 1)
 
+SELECT * FROM Ladu;
+SELECT * FROM Tellimus;
+
 
 GO
 Create Procedure TeeTellimus
@@ -217,3 +220,16 @@ Begin
   Select ERROR_MESSAGE() as ErrorMessage
  End Catch
 End;
+
+SELECT * FROM Ladu;
+SELECT * FROM Tellimus;
+
+EXEC TeeTellimus @TellimusId = 4, @ToodeId = 1, @Klient = 'Peeter', @Kogus = 2;
+
+SELECT * FROM Ladu;
+SELECT * FROM Tellimus;
+
+EXEC TeeTellimus @TellimusId = 5, @ToodeId = 3, @Klient = 'Liis', @Kogus = 100;
+
+SELECT * FROM Ladu;
+SELECT * FROM Tellimus;
